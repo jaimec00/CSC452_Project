@@ -113,9 +113,9 @@ if __name__ == "__main__":
     parser.add_argument("--url_file", type=str, default="urls.txt")
     parser.add_argument("--img_dir", type=str, default="images")
     parser.add_argument("--annotations_dir", type=str, default="annotations")
-    parser.add_argument("--get_images", type=int, default=0)
+    parser.add_argument("--get_images", type=int, default=1)
     parser.add_argument("--get_annotations", type=int, default=1)
-    parser.add_argument("--get_urls", type=int, default=0)
+    parser.add_argument("--get_urls", type=int, default=1)
 
     args = parser.parse_args()
 
