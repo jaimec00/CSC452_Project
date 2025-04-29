@@ -6,3 +6,6 @@ data:
   train_val_path: "data/images/livecell_train_val_images"
   test_path: "data/images/livecell_test_images"
   annotations_path: "data/annotations"
+  num_train: 32
+  num_val: 32
+  num_test: 32
