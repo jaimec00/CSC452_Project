@@ -1,3 +1,4 @@
 images
 annotations
 urls.txt
+__pycache__/
