@@ -63,7 +63,14 @@ class Data():
                 # update mask
                 ann_mask |= maskUtils.decode(rle).astype(np.bool).squeeze(2) # H x W x 1 -> H x W
 
+            imgs.append(img)
+            labels.append(ann_mask)
+
             pbar.update(1)
 
-        self.imgs = np.concatenate(imgs, axis=0) # [H x W] -> B x H x W
-        self.labels = np.concatenate(ann_mask, axis=0) # [H x W] -> B x H x W
+        print(imgs, labels)
+
+        self.imgs = np.stack(imgs, axis=0) # [H x W] -> B x H x W
+        self.labels = np.stack(labels, axis=0) # [H x W] -> B x H x W
+
+        print(self.imgs.shape, self.labels.shape)
