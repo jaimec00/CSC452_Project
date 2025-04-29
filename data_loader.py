@@ -12,8 +12,8 @@ from tqdm import tqdm
 class DataLoader():
 
     def __init__(self, train_path="data/images/livecell_train_val_images", test_path="data/images/livecell_test_images", annotations="annotations", num_train=-1, num_val=-1, num_test=-1): # -1 means all available
-        # self.train = Data(train_path, f"{annotations}/training.json", num_train) # commented out to deal w/ smallest set for debugging
-        # self.val = Data(train_path, f"{annotations}/validation.json", num_val)
+        self.train = Data(train_path, f"{annotations}/training.json", num_train) # commented out to deal w/ smallest set for debugging
+        self.val = Data(train_path, f"{annotations}/validation.json", num_val)
         self.test = Data(test_path, f"{annotations}/testing.json", num_test)
 
 class Data():
@@ -68,9 +68,5 @@ class Data():
 
             pbar.update(1)
 
-        print(imgs, labels)
-
         self.imgs = np.stack(imgs, axis=0) # [H x W] -> B x H x W
         self.labels = np.stack(labels, axis=0) # [H x W] -> B x H x W
-
-        print(self.imgs.shape, self.labels.shape)

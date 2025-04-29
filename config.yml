@@ -1,6 +1,11 @@
 training_params:
   epochs: 1
+  batch_size: 32
   lr: 0.001
+  loss_func: "binary_crossentropy"
+
+hyper_params:
+  input_size: !!tuple (520, 704) # 
 
 data:
   train_val_path: "data/images/livecell_train_val_images"
@@ -9,3 +14,4 @@ data:
   num_train: 32
   num_val: 32
   num_test: 32
+
