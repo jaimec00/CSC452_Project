@@ -1,3 +1,88 @@
 """
 given a path, reads the data and splits into train, val test, and loads the data (possibly iterable)
 """
+from pathlib import Path
+from pycocotools import coco
+import cv2
+import numpy as np 
+from pycocotools import mask as maskUtils
+import random
+from tqdm import tqdm
+
+class DataLoader():
+
+    def __init__(self, train_path="data/images/livecell_train_val_images", test_path="data/images/livecell_test_images", annotations="annotations", batch_size=32):
+        # self.train = Data(train_path, f"{annotations}/training.json", batch_size) # commented out to deal w/ smallest set for debugging
+        # self.val = Data(train_path, f"{annotations}/validation.json", batch_size)
+        self.test = Data(test_path, f"{annotations}/testing.json", batch_size)
+
+class Data():
+    def __init__(self, data_path, annotations_path, batch_size, shuffle=True):
+        self.data_path = data_path
+        self.annotations = coco.COCO(annotations_path)
+        self.load_data()
+        self.shuffle = shuffle
+
+    def load_data(self):
+        # everything is 520 x 704
+        imgs, labels = [], [] # convert to tensor once loaded, 
+
+        img_ids = self.annotations.getImgIds()
+
+        pbar = tqdm(total=len(img_ids), unit='imgs', unit_scale=True, desc=f"loading data")
+
+        for img_id in img_ids:
+
+            # image info
+            img_info = self.annotations.loadImgs([img_id])[0]
+
+            # path to img
+            img_file = img_info["file_name"]
+            img_dir = img_file.split("_")[0]
+            img_path = f"{self.data_path}/{img_dir}/{img_file}"
+            img = cv2.imread(img_path, flags=cv2.IMREAD_UNCHANGED | cv2.IMREAD_ANYDEPTH)
+
+            # get segmentations
+            annIds = self.annotations.getAnnIds(imgIds=img_info['id'], catIds=[], iscrowd=None)
+            anns = self.annotations.loadAnns(annIds)
+
+            # anns is a list of dicts, each corresponding to single cell
+            # loop through cells and update the mask
+            ann_mask = np.zeros_like(img, dtype=np.bool)
+
+            # is crowd is 0, so have list of lists, each inner list correspond to a seperate cell
+            # inner list is a polygon in format [x1, y1, x2, y2, ... xn, yn]
+            # plan is to creat a mask, with one meaning that the pixels are within the area enclosed by polygon, 0 is outiside
+            # pycoco tools allows you to do this automatically
+            for cell in anns:
+                segmentations = cell["segmentation"]
+                if isinstance(segmentations, dict):
+                    rle = segmentations
+                else:
+                    rle = maskUtils.frPyObjects(segmentations, img.shape[0], img.shape[1])
+
+                # update mask
+                ann_mask |= maskUtils.decode(rle).astype(np.bool).squeeze(2) # H x W x 1 -> H x W
+
+            pbar.update(1)
+
+        self.imgs = np.concatenate(imgs, axis=0) # [H x W] -> B x H x W
+        self.labels = np.concatenate(ann_mask, axis=0) # [H x W] -> B x H x W
+        self.idxs = [i for i in range(self.imgs.shape(0))] # for shuffling data
+
+    def __iter__(self):
+
+        if self.shuffle:
+            random.shuffle(self.idxs)
+
+        for i in range(0, len(self.idxs), self.batch_size):
+            idxs = self.idxs[i:self.batch_size]
+
+            imgs = self.imgs[idxs, :, :]
+            labels = self.imgs[idxs, :, :]
+
+            # yieds tuple of img and label
+            yield imgs, labels
+
+
+

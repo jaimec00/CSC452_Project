@@ -1,0 +1,8 @@
+training_params:
+  epochs: 1
+  lr: 0.001
+
+data:
+  train_val_path: "data/images/livecell_train_val_images"
+  test_path: "data/images/livecell_test_images"
+  annotations_path: "data/annotations"

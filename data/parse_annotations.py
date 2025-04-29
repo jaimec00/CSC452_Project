@@ -9,7 +9,7 @@ def main():
 
     # paths
     data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-    img_dir = os.path.join(data_dir, "images/images")
+    img_dir = os.path.join(data_dir, "images")
     img_test_dir = os.path.join(img_dir, "livecell_test_images")
     annotations_dir = os.path.join(data_dir, "annotations")
 
@@ -35,17 +35,19 @@ def main():
     for ann in anns:
 
         segmentation = ann["segmentation"]
-        coords = segmentation_2_coords(segmentation)
-        ax = plt.gca()
-        polygon_patch = Polygon(coords, closed=True, edgecolor='red', facecolor='none', linewidth=2)
-        ax.add_patch(polygon_patch)
+        print(segmentation)
+        break
+        # coords = segmentation_2_coords(segmentation)
+        # ax = plt.gca()
+        # polygon_patch = Polygon(coords, closed=True, edgecolor='red', facecolor='none', linewidth=2)
+        # ax.add_patch(polygon_patch)
 
         # if you want to do the bounding boxes instead
         # bbox = ann['bbox']
         # x, y, width, height = bbox
         # plt.gca().add_patch(plt.Rectangle((x, y), width, height, fill=False, edgecolor='red', linewidth=2))
         
-    plt.show()
+    # plt.show()
 
 def segmentation_2_coords(segmentation):
     '''converts flattened xy coords into list of list, each inner list being an x,y pair'''
