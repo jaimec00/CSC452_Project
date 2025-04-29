@@ -11,23 +11,22 @@ from tqdm import tqdm
 
 class DataLoader():
 
-    def __init__(self, train_path="data/images/livecell_train_val_images", test_path="data/images/livecell_test_images", annotations="annotations", batch_size=32):
-        # self.train = Data(train_path, f"{annotations}/training.json", batch_size) # commented out to deal w/ smallest set for debugging
-        # self.val = Data(train_path, f"{annotations}/validation.json", batch_size)
-        self.test = Data(test_path, f"{annotations}/testing.json", batch_size)
+    def __init__(self, train_path="data/images/livecell_train_val_images", test_path="data/images/livecell_test_images", annotations="annotations", num_train=-1, num_val=-1, num_test=-1): # -1 means all available
+        # self.train = Data(train_path, f"{annotations}/training.json", num_train) # commented out to deal w/ smallest set for debugging
+        # self.val = Data(train_path, f"{annotations}/validation.json", num_val)
+        self.test = Data(test_path, f"{annotations}/testing.json", num_test)
 
 class Data():
-    def __init__(self, data_path, annotations_path, batch_size, shuffle=True):
+    def __init__(self, data_path, annotations_path, num_samples):
         self.data_path = data_path
         self.annotations = coco.COCO(annotations_path)
-        self.load_data()
-        self.shuffle = shuffle
+        self.load_data(num_samples)
 
-    def load_data(self):
+    def load_data(self, num_samples):
         # everything is 520 x 704
         imgs, labels = [], [] # convert to tensor once loaded, 
 
-        img_ids = self.annotations.getImgIds()
+        img_ids = self.annotations.getImgIds()[:num_samples] # only the first num_samples
 
         pbar = tqdm(total=len(img_ids), unit='imgs', unit_scale=True, desc=f"loading data")
 
@@ -68,21 +67,3 @@ class Data():
 
         self.imgs = np.concatenate(imgs, axis=0) # [H x W] -> B x H x W
         self.labels = np.concatenate(ann_mask, axis=0) # [H x W] -> B x H x W
-        self.idxs = [i for i in range(self.imgs.shape(0))] # for shuffling data
-
-    def __iter__(self):
-
-        if self.shuffle:
-            random.shuffle(self.idxs)
-
-        for i in range(0, len(self.idxs), self.batch_size):
-            idxs = self.idxs[i:self.batch_size]
-
-            imgs = self.imgs[idxs, :, :]
-            labels = self.imgs[idxs, :, :]
-
-            # yieds tuple of img and label
-            yield imgs, labels
-
-
-

@@ -14,11 +14,7 @@ class TrainingRun():
         self.epochs = config.training_params.epochs
         self.lr = config.training_params.lr
 
-        # for 
-        for img, label in self.data.test:
-            print(img, label)
-            break
-
+        
 
 
 if __name__ == "__main__":
