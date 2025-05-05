@@ -1,37 +1,50 @@
 """defines the model"""
 
 
-from tensorflow.keras.layers import Dense, Dropout, Flatten
-from tensorflow.keras.layers import Conv2D, MaxPooling2D
-from tensorflow.keras import backend as K
-from tensorflow.keras.optimizers import SGD
+import tensorflow as tf
+from tensorflow.keras import layers, Model
 
+def setup_model(input_shape=(520, 704, 1), num_layers=3, initial_filters=64):
+	"""
+	Builds a U-Net model with the specified input shape, number of down/up sampling layers,
+	and initial number of filters.
 
-def setup_model():
+	Args:
+		input_shape (tuple): Dimensions of the input image (height, width, channels).
+		num_layers (int): Number of downsampling/upsampling layers.
+		initial_filters (int): Number of filters for the first convolutional block.
 
-    # create model
-    model = Sequential()
+	Returns:
+		tf.keras.Model: The constructed U-Net model.
+	"""
+	inputs = layers.Input(shape=input_shape)
 
-    # Our First Convolution Layer, Filter size 32 which reduces our layer size to 26 x 26 x 32
-    # We use ReLU activation and specify our input_shape which is 28 x 28 x 1
-    model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=input_shape))
+	# Encoder path (downsampling)
+	skips = []
+	x = inputs
+	filters = initial_filters
+	for i in range(num_layers):
+		x = layers.Conv2D(filters, (3, 3), activation='relu', padding='same')(x)
+		x = layers.Conv2D(filters, (3, 3), activation='relu', padding='same')(x)
+		skips.append(x)
+		x = layers.MaxPooling2D((2, 2))(x)
+		filters *= 2
 
-    # Our Second Convolution Layer, Filter size 64 which reduces our layer size to 24 x 24 x 64
-    model.add(Conv2D(64, (3, 3), activation='relu'))
+	# Bottleneck
+	x = layers.Conv2D(filters, (3, 3), activation='relu', padding='same')(x)
+	x = layers.Conv2D(filters, (3, 3), activation='relu', padding='same')(x)
 
-    # We use MaxPooling with a kernel size of 2 x 2, this reduces our size to 12 x 12 x 64
-    model.add(MaxPooling2D(pool_size=(2, 2)))
+	# Decoder path (upsampling)
+	for i in reversed(range(num_layers)):
+		filters //= 2
+		x = layers.Conv2DTranspose(filters, (2, 2), strides=(2, 2), padding='same')(x)  # Upsampling
+		x = layers.Concatenate()([x, skips[i]])  # Skip connection
+		x = layers.Conv2D(filters, (3, 3), activation='relu', padding='same')(x)
+		x = layers.Conv2D(filters, (3, 3), activation='relu', padding='same')(x)
 
-    # We then Flatten our tensor object before input into our Dense Layer
-    # A flatten operation on a tensor reshapes the tensor to have the shape that is
-    # equal to the number of elements contained in tensor
-    # In our CNN it goes from 12 * 12 * 64 to 9216 * 1
-    model.add(Flatten())
+	# Output layer
+	outputs = layers.Conv2D(1, (1, 1), activation='sigmoid')(x)
 
-    # We connect this layer to a Fully Connected/Dense layer of size 1 * 128
-    model.add(Dense(128, activation='relu'))
+	model = Model(inputs, outputs, name='U-Net')
 
-    # We create our final Fully Connected/Dense layer with an output for each class (10)
-    model.add(Dense(num_classes, activation='softmax'))
-
-    return model
+	return model

@@ -1,4 +1,5 @@
-images
-annotations
-urls.txt
+data/images/
+data/annotations/
+data/urls.txt
 __pycache__/
+output/

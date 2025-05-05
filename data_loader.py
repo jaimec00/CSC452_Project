@@ -68,5 +68,5 @@ class Data():
 
             pbar.update(1)
 
-        self.imgs = np.stack(imgs, axis=0) # [H x W] -> B x H x W
-        self.labels = np.stack(labels, axis=0) # [H x W] -> B x H x W
+        self.imgs = np.stack(imgs, axis=0)[:, :, :, None] # [H x W] -> B x H x W x 1
+        self.labels = np.stack(labels, axis=0)[:, :, :, None] # [H x W] -> B x H x W x1
