@@ -5,13 +5,13 @@ training_params:
   loss_func: "binary_crossentropy"
 
 hyper_params:
-  input_size: 
+  input_size: # should prob make this the data loaders job from the images instead of manually defining here
     height: 520
     width: 704
     channels: 1
   unet: # start at 520 x 704 x 1, layer corrresponds to the output shape for both the downsample and the upsample of each layer
     num_layers: 3
-    initial_filters: 64
+    initial_filters: 16
 
 data:
   train_val_path: "data/images/images/livecell_train_val_images"
