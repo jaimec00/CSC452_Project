@@ -1,7 +1,7 @@
 training_params:
-  epochs: 5
+  epochs: 20
   batch_size: 1
-  lr: 0.001
+  lr: 0.00001
   loss_func: "binary_crossentropy"
 
 hyper_params:

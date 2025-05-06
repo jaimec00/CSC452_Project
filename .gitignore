@@ -3,3 +3,4 @@ data/annotations/
 data/urls.txt
 __pycache__/
 output/
+.idea/
